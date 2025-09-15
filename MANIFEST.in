@@ -16,6 +16,7 @@ include ioc/*.c
 include ioc/*.cpp
 include ioc/*.dbd
 include ioc/pvxs/*.h
+include python/aiopvxs/*.cpp
 
 include bundle/libevent/LICENSE
 include bundle/libevent/cmake/VersionViaGit.cmake

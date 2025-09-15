@@ -12,6 +12,7 @@ from setuptools_dso import DSO, Extension, setup, build_dso, ProbeToolchain
 from epicscorelibs.config import get_config_var
 import epicscorelibs.path
 import epicscorelibs.version
+import pybind11
 
 def pvxsversion():
     with open(os.path.join('configure', 'CONFIG_PVXS_VERSION'), 'r') as F:
@@ -110,6 +111,7 @@ class Expand(Command):
     def run(self):
         log.info("In Expand")
         self.mkpath(os.path.join(self.build_temp, 'event2'))
+        self.mkpath(os.path.join(self.build_temp, 'pvxslibs', 'include', 'pvxs'))
         self.mkpath(os.path.join(self.build_lib, 'pvxslibs', 'include', 'pvxs'))
         self.mkpath(os.path.join(self.build_lib, 'pvxslibs', 'dbd'))
 
@@ -415,6 +417,9 @@ class Expand(Command):
                 os.path.join(self.build_temp, 'describe.h'),
                 DEFS, dry_run=self.dry_run)
         cexpand('src/pvxs/versionNum.h@',
+                os.path.join(self.build_temp, 'pvxslibs', 'include', 'pvxs', 'versionNum.h'),
+                DEFS, dry_run=self.dry_run)
+        cexpand('src/pvxs/versionNum.h@',
                 os.path.join(self.build_lib, 'pvxslibs', 'include', 'pvxs', 'versionNum.h'),
                 DEFS, dry_run=self.dry_run)
         cexpand('bundle/libevent/evconfig-private.h.cmake',
@@ -694,6 +699,35 @@ build_dso.sub_commands.extend([
     ('install_epics_headers', lambda self:True),
 ])
 
+ext_modules = [
+    Extension(
+        name = 'aiopvxs',
+        sources = [
+            'python/aiopvxs/aiopvxs.cpp',
+        ],
+        define_macros = [('PVXS_ENABLE_EXPERT_API', None)] + get_config_var('CPPFLAGS'),
+        include_dirs=[
+            pybind11.get_include(),
+            'src',
+            '.', # generated headers under build/tmp
+            'pvxslibs/include', # generated header <pvxs/versionNum.h>
+            epicscorelibs.path.include_path
+        ],
+        lang_compile_args = {
+            'c': get_config_var('CFLAGS'),
+            'c++': ['-std=c++11'] + get_config_var('CXXFLAGS'),
+        },
+        extra_link_args = ['-std=c++11'] + get_config_var('LDFLAGS'),
+        soversion = '%(PVXS_MAJOR_VERSION)s.%(PVXS_MINOR_VERSION)s'%pvxsversion,
+        dsos = [
+            'pvxslibs.lib.pvxs',
+            'pvxslibs.lib.event_core',
+            #'epicscorelibs.lib.ca',
+            'epicscorelibs.lib.Com',
+        ],
+        libraries = get_config_var('LDADD'),
+    )
+]
 
 pvxs_ver = '%(PVXS_MAJOR_VERSION)s.%(PVXS_MINOR_VERSION)s.%(PVXS_MAINTENANCE_VERSION)s'%pvxsversion
 # pvxs_ver += 'a3'
@@ -739,6 +773,7 @@ setup(
     packages=['pvxslibs', 'pvxslibs.lib', 'pvxslibs.test'],
     package_dir={'': 'python'},
     x_dsos = define_DSOS,
+    ext_modules = ext_modules,
     cmdclass = {
         'build_expand': Expand,
         'install_epics_headers':InstallHeaders,

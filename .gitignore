@@ -11,6 +11,7 @@
 /dist/
 O.*/
 __pycache__/
+*.egg-info/
 *.so*
 *.orig
 *.log
