@@ -146,7 +146,7 @@ jobs:
           python -m pip --version
           python -m twine -h
 
-          python -m pip install setuptools wheel nose2
+          python -m pip install setuptools wheel nose2 pybind11
           python -m pip install $PRE setuptools_dso>=2.1a1 epicscorelibs>=7.0.3.99.2.0a1
 
       - name: Source
@@ -346,7 +346,7 @@ jobs:
       - name: PY Source
         run: |
           echo "PRE=$PRE"
-          python -m pip install setuptools wheel nose2
+          python -m pip install setuptools wheel nose2 pybind11
           python -m pip install --only-binary numpy $PRE setuptools_dso>=2.1a1 epicscorelibs>=7.0.3.99.2.0a1
           python setup.py sdist --formats=gztar
           ls dist/*
@@ -366,7 +366,7 @@ jobs:
           export SETUPTOOLS_DSO_PLAT_NAME="${{ matrix.manylinux }}_${{ matrix.arch }}"
           which python
           python -m pip install -U pip
-          python -m pip install setuptools wheel nose2
+          python -m pip install setuptools wheel nose2 pybind11
           python -m pip install --only-binary numpy $PRE setuptools_dso>=2.1a1 epicscorelibs>=7.0.3.99.2.0a1
 
           python -m pip wheel -v --only-binary numpy -w dist dist/pvxslibs-*.tar.gz

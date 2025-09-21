@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 
 from glob import glob
 
@@ -773,7 +774,8 @@ setup(
     packages=['pvxslibs', 'pvxslibs.lib', 'pvxslibs.test'],
     package_dir={'': 'python'},
     x_dsos = define_DSOS,
-    ext_modules = ext_modules,
+    # aiopvxs extension module needs minimum python v3.8
+    ext_modules = ext_modules if sys.version_info >= (3,8) else [],
     cmdclass = {
         'build_expand': Expand,
         'install_epics_headers':InstallHeaders,
